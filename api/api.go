@@ -9,14 +9,14 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"gitlab.com/nerdalize/yak/yak"
+	"github.com/feliksik/goatshop/goat"
 	"strconv"
 )
 
 type Shop struct {
 	CurrentDay int
-	Herd       *yak.Herd
-	Stock      *yak.Stock
+	Herd       *goat.Herd
+	Stock      *goat.Stock
 }
 
 func (s *Shop) AdvanceToDay(day int) {
@@ -27,8 +27,8 @@ func (s *Shop) AdvanceToDay(day int) {
 }
 
 func (s *Shop) Reset() {
-	s.Herd = &yak.Herd{}
-	s.Stock = &yak.Stock{}
+	s.Herd = &goat.Herd{}
+	s.Stock = &goat.Stock{}
 	s.CurrentDay = 0
 }
 
@@ -79,7 +79,7 @@ func (s *Shop) loadHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusResetContent)
 
-	w.Write([]byte(fmt.Sprintf("New data loaded (%d yaks)\n", len(s.Herd.Yaks))))
+	w.Write([]byte(fmt.Sprintf("New data loaded (%d goats)\n", len(s.Herd.Goats))))
 
 	w.Header().Set("Content-Type", "application/xml")
 
@@ -109,7 +109,7 @@ func (s *Shop) orderHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	order := &yak.Order{}
+	order := &goat.Order{}
 	err = json.Unmarshal(body, order)
 
 	if err != nil {
@@ -207,12 +207,12 @@ func (s *Shop) stockHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Shop) GetHandler() http.Handler {
 
 	r := mux.NewRouter()
-	r.HandleFunc("/yak-shop/load", s.loadHandler)
-	r.HandleFunc("/yak-shop/herd/{day:[0-9]+}", s.herdHandler)
-	r.HandleFunc("/yak-shop/stock/{day:[0-9]+}", s.stockHandler)
-	r.HandleFunc("/yak-shop/order/{day:[0-9]+}", s.orderHandler)
+	r.HandleFunc("/goat-shop/load", s.loadHandler).Methods("POST")
+	r.HandleFunc("/goat-shop/herd/{day:[0-9]+}", s.herdHandler)
+	r.HandleFunc("/goat-shop/stock/{day:[0-9]+}", s.stockHandler)
+	r.HandleFunc("/goat-shop/order/{day:[0-9]+}", s.orderHandler)
 
-	r.HandleFunc("/yak-shop/state", s.stateHandler)
+	r.HandleFunc("/goat-shop/state", s.stateHandler)
 
 	n := negroni.New()
 	n.Use(negroni.NewLogger())

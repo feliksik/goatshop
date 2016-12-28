@@ -3,7 +3,7 @@ package api_test
 import (
 	"encoding/json"
 	"fmt"
-	"gitlab.com/nerdalize/yak/api"
+	"github.com/feliksik/goatshop/api"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -37,14 +37,14 @@ func loadBasicShop() (*http.Response, error) {
 
 	herdXML := `<?xml version="1.0" encoding="UTF-8" ?>
 <herd>
-  <labyak name="Betty-1" age="4" sex="f" />
-  <labyak name="Betty-2" age="8" sex="f" />
-  <labyak name="Betty-3" age="9.5" sex="f" />
+  <goat name="Betty-1" age="4" sex="f" />
+  <goat name="Betty-2" age="8" sex="f" />
+  <goat name="Betty-3" age="9.5" sex="f" />
 </herd>
 `
 	request, err := http.NewRequest(
 		"POST",
-		baseUrl+"/yak-shop/load",
+		baseUrl+"/goat-shop/load",
 		strings.NewReader(herdXML)) //Create request with JSON body
 
 	res, err := http.DefaultClient.Do(request)
@@ -61,11 +61,11 @@ func TestLoadShop(t *testing.T) {
 		t.Errorf("Expected: 205. Actual: %d", res.StatusCode) //Uh-oh this means our test failed
 	}
 
-	if nrYaks := len(shop.Herd.Yaks); nrYaks != 3 {
-		t.Fatalf("Yaks expected: 3. Actual: %d", nrYaks) //Uh-oh this means our test failed
+	if nrGoats := len(shop.Herd.Goats); nrGoats != 3 {
+		t.Fatalf("Goats expected: 3. Actual: %d", nrGoats) //Uh-oh this means our test failed
 	}
 
-	y1 := shop.Herd.Yaks[1]
+	y1 := shop.Herd.Goats[1]
 
 	if age := y1.Age; age != 800 {
 		t.Errorf("Age should be 800 days, but is %d", age)
@@ -109,7 +109,7 @@ type ResponseSpec struct {
 }
 
 /*
-	create an uncheck HTTP request, that is, do not check url valicity
+	create an uncheck HTTP request, that is, do not check url validity
 */
 func HTTPRequest(method string, url string, body io.Reader) *http.Request {
 	req, _ := http.NewRequest(method, url, body)
@@ -206,7 +206,7 @@ func testJsonRequest(req *http.Request, responseSpec ResponseSpec) error {
 func TestStock(t *testing.T) {
 
 	err := testJsonRequest(
-		HTTPRequest("GET", baseUrl+"/yak-shop/stock/13", nil),
+		HTTPRequest("GET", baseUrl+"/goat-shop/stock/13", nil),
 		ResponseSpec{
 			StatusCode: 200,
 			Body: `{
@@ -221,7 +221,7 @@ func TestStock(t *testing.T) {
 	}
 
 	err = testJsonRequest(
-		HTTPRequest("GET", baseUrl+"/yak-shop/stock/14", nil),
+		HTTPRequest("GET", baseUrl+"/goat-shop/stock/14", nil),
 		ResponseSpec{
 			Body: `{
 				"milk" : 1188.81,
@@ -248,7 +248,7 @@ func TestOrderAvailable(t *testing.T) {
 	/* see if the response is correct */
 	err := testJsonRequest(
 		HTTPRequest("POST",
-			baseUrl+fmt.Sprintf("/yak-shop/order/14"),
+			baseUrl+fmt.Sprintf("/goat-shop/order/14"),
 			strings.NewReader(`{
 				"customer" : "Medvedev",
 				"order" : {
@@ -272,7 +272,7 @@ func TestOrderAvailable(t *testing.T) {
 
 	err = testJsonRequest(
 		HTTPRequest("GET",
-			baseUrl+fmt.Sprintf("/yak-shop/stock/14"),
+			baseUrl+fmt.Sprintf("/goat-shop/stock/14"),
 			nil,
 		),
 		ResponseSpec{
@@ -298,7 +298,7 @@ func TestOrder_PartiallyAvailable(t *testing.T) {
 	err := testJsonRequest(
 		HTTPRequest(
 			"POST",
-			baseUrl+fmt.Sprintf("/yak-shop/order/14"),
+			baseUrl+fmt.Sprintf("/goat-shop/order/14"),
 			strings.NewReader(`{
 				"customer" : "Medvedev",
 				"order" : {
@@ -319,7 +319,7 @@ func TestOrder_PartiallyAvailable(t *testing.T) {
 	}
 
 	err = testJsonRequest(
-		HTTPRequest("GET", baseUrl+fmt.Sprintf("/yak-shop/stock/14"), nil),
+		HTTPRequest("GET", baseUrl+fmt.Sprintf("/goat-shop/stock/14"), nil),
 		ResponseSpec{
 			StatusCode: http.StatusOK,
 			Body:       `{ "milk" : 1188.81, "skins" : 1 }`,
@@ -341,7 +341,7 @@ func TestOrder_Unavailable(t *testing.T) {
 	err := testJsonRequest(
 		HTTPRequest(
 			"POST",
-			baseUrl+fmt.Sprintf("/yak-shop/order/14"),
+			baseUrl+fmt.Sprintf("/goat-shop/order/14"),
 			strings.NewReader(`{
 				"customer" : "Medvedev",
 				"order" : {
@@ -364,7 +364,7 @@ func TestOrder_Unavailable(t *testing.T) {
 	/* see if the stock is the same */
 
 	err = testJsonRequest(
-		HTTPRequest("GET", baseUrl+"/yak-shop/stock/14", nil),
+		HTTPRequest("GET", baseUrl+"/goat-shop/stock/14", nil),
 		ResponseSpec{
 			StatusCode: 200,
 			Body:       `{ "milk" : 1188.81, "skins" : 4 }`,
@@ -380,7 +380,7 @@ func TestHerd(t *testing.T) {
 	TestLoadShop(t)
 
 	err := testJsonRequest(
-		HTTPRequest("GET", baseUrl+"/yak-shop/herd/13", nil),
+		HTTPRequest("GET", baseUrl+"/goat-shop/herd/13", nil),
 		ResponseSpec{
 			StatusCode: 200,
 			Header:     jsonHeader,
